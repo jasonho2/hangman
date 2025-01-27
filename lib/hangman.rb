@@ -23,6 +23,7 @@ class Hangman
     @secret_word = FILTERED_WORDS.sample.upcase.chars
     @mistakes = 0
     @secret_word_spaces = Array.new(@secret_word.length, '_')
+    @incorrect_guesses = []
 
     puts "Welcome to Hangman. Try to guess the secret word."
     display_word
@@ -30,8 +31,9 @@ class Hangman
   end
 
   def play
-    while @mistakes < 6 && @secret_word_spaces.include?('_')
+    while @mistakes < 7 && @secret_word_spaces.include?('_')
       print "\nTotal mistakes: #{@mistakes}\n"
+      puts "Incorrect guesses: #{@incorrect_guesses.join(', ')}" unless @incorrect_guesses.empty?
       puts "Enter a letter or type 'SAVE' to save and exit: "
       guess = gets.chomp.upcase
 
@@ -65,6 +67,7 @@ class Hangman
       puts "Yes! '#{guess}' is part of the secret word."
     else
       puts "No - '#{guess}' is not part of the secret word."
+      @incorrect_guesses << guess
       @mistakes += 1
     end
   end
@@ -97,7 +100,8 @@ class Hangman
     game_state = {
       secret_word: @secret_word,
       mistakes: @mistakes,
-      secret_word_spaces: @secret_word_spaces
+      secret_word_spaces: @secret_word_spaces,
+      incorrect_guesses: @incorrect_guesses
     }
 
     File.open(save_file, "w") { |file| file.write(JSON.dump(game_state)) }
@@ -124,6 +128,7 @@ class Hangman
       @secret_word = game_state[:secret_word]
       @mistakes = game_state[:mistakes]
       @secret_word_spaces = game_state[:secret_word_spaces]
+      @incorrect_guesses = game_state[:incorrect_guesses] || []
 
       puts "Game '#{saves[choice]}' loaded. Continue guessing!"
       display_word
